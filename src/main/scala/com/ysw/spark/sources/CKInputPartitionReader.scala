@@ -19,9 +19,9 @@ import java.sql.{ResultSet, SQLException}
  */
 class CKInputPartitionReader(node: ClickHouseNode, schema: StructType, options: CKOptions) extends InputPartitionReader[InternalRow] with Logging with Serializable {
   val helper = new CKHelper(options)
-  var connection: ClickHouseConnection = null
-  var st: ClickHouseStatement = null
-  var rs: ResultSet = null
+  var connection: ClickHouseConnection = _
+  var st: ClickHouseStatement = _
+  var rs: ResultSet = _
 
   override def next(): Boolean = {
     if (null == connection || connection.isClosed && null == st || st.isClosed && null == rs || rs.isClosed) {

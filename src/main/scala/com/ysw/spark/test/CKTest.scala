@@ -9,7 +9,7 @@ object CKTest {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
-      .master("local")
+      .master("local[*]")
       .appName("CKTest").getOrCreate();
     val df = spark.read
       .format("clickhouse")

@@ -147,7 +147,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
         values += fieldValue
       }
     }
-    if (names.length > 0 && values.length > 0) {
+    if (names.nonEmpty && values.nonEmpty) {
       names += ("sign", "version")
       values += ("1", System.currentTimeMillis().toString)
     }

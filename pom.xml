@@ -15,10 +15,8 @@
 
         <scala-version>2.12.11</scala-version>
         <scala-binary>2.12</scala-binary>
-        <hutool.version>5.8.16</hutool.version>
         <spark.version>2.4.5</spark.version>
         <clickhouse-jdbc.version>0.6.0</clickhouse-jdbc.version>
-        <slf4j.version>2.0.9</slf4j.version>
     </properties>
 
     <dependencies>
@@ -28,21 +26,18 @@
             <version>${scala-version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-            <version>${hutool.version}</version>
-        </dependency>
         <!-- spark 依赖 -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala-binary}</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala-binary}</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.clickhouse</groupId>
@@ -50,11 +45,6 @@
             <version>${clickhouse-jdbc.version}</version>
             <!-- use uber jar with all dependencies included, change classifier to http for smaller jar -->
             <classifier>all</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
 
