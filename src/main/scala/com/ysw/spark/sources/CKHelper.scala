@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
+import scala.collection.JavaConverters._
 
 import java.io.Serializable
 import java.sql._
@@ -39,9 +40,9 @@ class CKHelper(options: CKOptions) extends Serializable {
     var url = s"jdbc:clickhouse://${node.getHost}:${node.getPort}/$db"
     if (!node.getOptions.isEmpty) {
       url += "?"
-      node.getOptions.forEach((key, value) => {
-        if (ClickHouseClientOption.DATABASE.getKey == key) db = value
-        else url += s"$key=$value&"
+      node.getOptions.asScala.foreach(t => {
+        if (ClickHouseClientOption.DATABASE.getKey == t._1) db = t._2
+        else url += s"$t._1=$t._2&"
       })
       url = url.substring(0, url.length - 1)
     }

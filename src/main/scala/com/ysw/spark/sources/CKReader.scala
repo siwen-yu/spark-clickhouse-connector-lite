@@ -17,7 +17,7 @@ class CKReader(options: CKOptions) extends DataSourceReader {
   private val schema = if (StringUtils.isEmpty(customSchema)) {
     helper.getSparkTableSchema()
   } else {
-    helper.getSparkTableSchema(new util.LinkedList[String](asJavaCollection(customSchema.split(","))))
+    helper.getSparkTableSchema(new util.LinkedList[String](customSchema.split(",").toList.asJava))
   }
 
   override def readSchema(): StructType = schema
