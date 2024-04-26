@@ -42,10 +42,11 @@ class CKHelper(options: CKOptions) extends Serializable {
       url += "?"
       node.getOptions.asScala.foreach(t => {
         if (ClickHouseClientOption.DATABASE.getKey == t._1) db = t._2
-        else url += s"$t._1=$t._2&"
+        else url += s"${t._1}=${t._2}&"
       })
       url = url.substring(0, url.length - 1)
     }
+    log.info("connect clickhouse : " + url)
     url
   }
 

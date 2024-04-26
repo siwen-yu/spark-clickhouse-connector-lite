@@ -17,7 +17,6 @@ class CKOptions(var originalMap: util.Map[String, String]) extends Serializable 
   val DATABASE_KEY: String = "database"
   val TABLE_KEY: String = "table"
   val AUTO_CREATE_TABLE = "autoCreateTable".toLowerCase
-  val PATH_KEY = "path"
   val INTERVAL = "interval"
   val CUSTOM_SCHEMA_KEY: String = "customSchema".toLowerCase
   val WHERE_KEY: String = "where"
@@ -49,8 +48,6 @@ class CKOptions(var originalMap: util.Map[String, String]) extends Serializable 
   def getInterval(): Long = {
     originalMap.getOrDefault(INTERVAL, "200").toLong
   }
-
-  def getPath: String = if (StringUtils.isEmpty(getValue(PATH_KEY, new String))) getTable else getValue(PATH_KEY, new String)
 
   def getWhere: String = getValue(WHERE_KEY, new String)
 
