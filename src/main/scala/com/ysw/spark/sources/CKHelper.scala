@@ -5,15 +5,14 @@ import com.clickhouse.client.config.ClickHouseClientOption
 import com.clickhouse.jdbc._
 import com.clickhouse.jdbc.internal.ClickHouseJdbcUrlParser
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types._
+import org.slf4j.LoggerFactory
 
 import java.io.Serializable
 import java.sql._
 import java.text.SimpleDateFormat
 import java.util
-import java.util.Properties
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -21,16 +20,18 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * ClickHouse的JDBCHelper实现
  */
-class CKHelper(options: CKOptions) extends Logging with Serializable {
+class CKHelper(options: CKOptions) extends Serializable {
+  final val log = LoggerFactory.getLogger(classOf[CKHelper])
+
   private val opType: String = options.getOpTypeField
   private val id: String = options.getPrimaryKey
   // 目标集群节点个数
   val nodes: scala.Array[ClickHouseNode] = ClickHouseJdbcUrlParser
-    .parse(options.getURL, new Properties())
+    .parse(options.getURL, options.asJdbcProperties())
     .getNodes.getNodes.asScala.toArray
 
   def getConnection(node: ClickHouseNode): ClickHouseConnection = {
-    new ClickHouseDataSource(toJdbcUrl(node)).getConnection(options.getUser, options.getPassword)
+    new ClickHouseDataSource(toJdbcUrl(node), options.asJdbcProperties()).getConnection(options.getUser, options.getPassword)
   }
 
   private def toJdbcUrl(node: ClickHouseNode): String = {
@@ -40,7 +41,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
       url += "?"
       node.getOptions.forEach((key, value) => {
         if (ClickHouseClientOption.DATABASE.getKey == key) db = value
-        else url += s"$key= $value&"
+        else url += s"$key=$value&"
       })
       url = url.substring(0, url.length - 1)
     }
@@ -114,7 +115,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
   }
 
   def getSelectStatement(schema: StructType): String = {
-    s"SELECT ${schema.fieldNames.mkString(",")} FROM ${options.getFullTable}"
+    s"SELECT ${schema.fieldNames.mkString(",")} FROM ${options.getTable}"
   }
 
   def getInsertStatement(table: String, schema: StructType, data: InternalRow): String = {
@@ -166,7 +167,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
       val primaryKeyValue = getFieldValue(primaryKeyField.name, schema, data)
       s"ALTER TABLE $table DELETE WHERE ${primaryKeyField.name} = $primaryKeyValue"
     } else {
-      logError("==== 找不到主键，无法生成删除SQL！")
+      log.error("==== 找不到主键，无法生成删除SQL！")
       ""
     }
   }
@@ -191,7 +192,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
       sets.remove(sets.length - 1)
       s"ALTER TABLE $table UPDATE ${sets.mkString(" AND ")} WHERE ${primaryKeyField.name}=$primaryKeyValue"
     } else {
-      logError("==== 找不到主键，无法生成修改SQL！")
+      log.error("==== 找不到主键，无法生成修改SQL！")
       ""
     }
   }
@@ -205,7 +206,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
     try {
       connection = getConnection(nodes.head)
       st = connection.createStatement
-      val sql = s"SELECT * FROM ${options.getFullTable} WHERE 1=0"
+      val sql = s"SELECT * FROM ${options.getTable} WHERE 1=0"
       rs = st.executeQuery(sql).asInstanceOf[ClickHouseResultSet]
       metaData = rs.getMetaData.asInstanceOf[ClickHouseResultSetMetaData]
       val columnCount = metaData.getColumnCount
@@ -249,7 +250,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
       st = connection createStatement()
       st.executeUpdate(batchSQL.toString())
     } catch {
-      case e: Exception => logError(s"执行异常：$sqls\n${e.getMessage}")
+      case e: Exception => log.error(s"执行异常：$sqls\n${e.getMessage}")
     } finally {
       closeAll(connection, st, null, null)
     }
@@ -265,7 +266,7 @@ class CKHelper(options: CKOptions) extends Logging with Serializable {
         st = connection createStatement()
         state += st.executeUpdate(sql)
       } catch {
-        case e: Exception => logError(s"执行异常：$sql\n${e.getMessage}")
+        case e: Exception => log.error(s"执行异常：$sql\n${e.getMessage}")
       } finally {
         closeAll(connection, st, null, null)
       }

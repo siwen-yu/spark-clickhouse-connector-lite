@@ -1,15 +1,15 @@
 package com.ysw.spark.sources
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.internal.Logging
 
 import java.io.Serializable
 import java.util
+import java.util.Properties
 
 /**
  * 从SparkSQL中DataSourceOptions中提取适用于ClickHouse的参数（spark.[read/write].options参数）
  */
-class CKOptions(var originalMap: util.Map[String, String]) extends Logging with Serializable {
+class CKOptions(var originalMap: util.Map[String, String]) extends Serializable {
   val DRIVER_KEY: String = "driver"
   val URL_KEY: String = "url"
   val USER_KEY: String = "user"
@@ -67,6 +67,15 @@ class CKOptions(var originalMap: util.Map[String, String]) extends Logging with 
   }
 
   def asMap(): util.Map[String, String] = this.originalMap
+  def asJdbcProperties(): Properties = {
+    val properties = new Properties()
+    properties.putAll(this.originalMap)
+    properties.remove(URL_KEY)
+    properties.remove(USER_KEY)
+    properties.remove(PASSWORD_KEY)
+    properties.remove(TABLE_KEY)
+    properties
+  }
 
   override def toString: String = originalMap.toString
 }
