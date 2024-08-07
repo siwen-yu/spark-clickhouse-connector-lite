@@ -22,6 +22,7 @@ class CKOptions(var originalMap: util.Map[String, String]) extends Serializable 
   val WHERE_KEY: String = "where"
   val OP_TYPE_FIELD = "opTypeField".toLowerCase
   val PRIMARY_KEY = "primaryKey".toLowerCase
+  val IGNORE_ERR_NODE = "ignoreErrNode".toLowerCase
 
   def getValue[T](key: String, `type`: T): T = (if (originalMap.containsKey(key)) originalMap.get(key) else null).asInstanceOf[T]
 
@@ -36,6 +37,14 @@ class CKOptions(var originalMap: util.Map[String, String]) extends Serializable 
   def getDatabase: String = getValue(DATABASE_KEY, new String)
 
   def getTable: String = getValue(TABLE_KEY, new String)
+
+  def getIgnoreErrNode: Boolean = {
+    originalMap.getOrDefault(IGNORE_ERR_NODE, "false").toLowerCase match {
+      case "true" => true
+      case "false" => false
+      case _ => false
+    }
+  }
 
   def autoCreateTable: Boolean = {
     originalMap.getOrDefault(AUTO_CREATE_TABLE, "false").toLowerCase match {

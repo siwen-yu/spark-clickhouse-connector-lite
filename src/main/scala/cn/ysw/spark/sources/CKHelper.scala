@@ -26,6 +26,7 @@ class CKHelper(options: CKOptions) extends Serializable {
 
   private val opType: String = options.getOpTypeField
   private val id: String = options.getPrimaryKey
+  val ignoreErrNode: Boolean = options.getIgnoreErrNode
   // 目标集群节点个数
   val nodes: scala.Array[ClickHouseNode] = ClickHouseJdbcUrlParser
     .parse(options.getURL, options.asJdbcProperties())

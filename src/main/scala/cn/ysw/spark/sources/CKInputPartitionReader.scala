@@ -26,9 +26,20 @@ class CKInputPartitionReader(node: ClickHouseNode, schema: StructType, options: 
 
   override def next(): Boolean = {
     if (null == connection || connection.isClosed && null == st || st.isClosed && null == rs || rs.isClosed) {
-      connection = helper.getConnection(node)
-      st = connection.createStatement()
-      rs = st.executeQuery(helper.getSelectStatement(schema))
+      try {
+        connection = helper.getConnection(node)
+        st = connection.createStatement()
+        rs = st.executeQuery(helper.getSelectStatement(schema))
+      } catch {
+        case e: Exception =>
+          if (helper.ignoreErrNode) {
+            log.warn(s"节点连接失败：${node.getHost}:${node.getPort}")
+          } else {
+            throw e
+          }
+      } finally {
+        helper.closeAll(connection, st, null, null)
+      }
     }
     if (null != rs && !rs.isClosed) rs.next() else false
   }
