@@ -32,13 +32,12 @@ class CKInputPartitionReader(node: ClickHouseNode, schema: StructType, options: 
         rs = st.executeQuery(helper.getSelectStatement(schema))
       } catch {
         case e: Exception =>
+          helper.closeAll(connection, st, null, null)
           if (helper.ignoreErrNode) {
             log.warn(s"节点连接失败：${node.getHost}:${node.getPort}")
           } else {
             throw e
           }
-      } finally {
-        helper.closeAll(connection, st, null, null)
       }
     }
     if (null != rs && !rs.isClosed) rs.next() else false
