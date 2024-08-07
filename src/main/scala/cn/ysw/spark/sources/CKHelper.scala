@@ -1,4 +1,4 @@
-package com.ysw.spark.sources
+package cn.ysw.spark.sources
 
 import com.clickhouse.client.ClickHouseNode
 import com.clickhouse.client.config.ClickHouseClientOption

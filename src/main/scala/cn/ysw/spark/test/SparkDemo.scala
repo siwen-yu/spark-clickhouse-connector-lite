@@ -1,4 +1,4 @@
-package com.ysw.spark.test
+package cn.ysw.spark.test
 
 import org.apache.spark.sql.SparkSession
 

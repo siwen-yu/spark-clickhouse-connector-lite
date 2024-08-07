@@ -1,4 +1,4 @@
-package com.ysw.spark.sources
+package cn.ysw.spark.sources
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.catalyst.InternalRow
