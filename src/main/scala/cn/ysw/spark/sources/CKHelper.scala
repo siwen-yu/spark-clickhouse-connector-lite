@@ -8,13 +8,12 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
-import scala.collection.JavaConverters._
 
 import java.io.Serializable
 import java.sql._
 import java.text.SimpleDateFormat
 import java.util
-import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -200,8 +199,8 @@ class CKHelper(options: CKOptions) extends Serializable {
     }
   }
 
-  def getCKTableSchema(customFields: util.LinkedList[String] = null): mutable.MutableList[(String, String)] = {
-    val fields = new mutable.MutableList[(String, String)]
+  def getCKTableSchema(customFields: util.LinkedList[String] = null): mutable.MutableList[(String, Int)] = {
+    val fields = new mutable.MutableList[(String, Int)]
     var connection: ClickHouseConnection = null
     var st: ClickHouseStatement = null
     var rs: ClickHouseResultSet = null
@@ -215,11 +214,11 @@ class CKHelper(options: CKOptions) extends Serializable {
       val columnCount = metaData.getColumnCount
       for (i <- 1 to columnCount) {
         val columnName = metaData.getColumnName(i)
-        val sqlTypeName = metaData.getColumnTypeName(i)
+        val sqlTypeId = metaData.getColumnType(i)
         if (null != customFields && customFields.size > 0) {
-          if (customFields.contains(columnName)) fields.+=((columnName, sqlTypeName))
+          if (customFields.contains(columnName)) fields.+=((columnName, sqlTypeId))
         } else {
-          fields.+=((columnName, sqlTypeName))
+          fields.+=((columnName, sqlTypeId))
         }
       }
     } catch {
@@ -336,42 +335,20 @@ class CKHelper(options: CKOptions) extends Serializable {
    * @param clickhouseDataType
    * @return
    */
-  private def getSparkSqlType(clickhouseDataType: String) = clickhouseDataType match {
-    case "IntervalYear" => DataTypes.IntegerType
-    case "IntervalQuarter" => DataTypes.IntegerType
-    case "IntervalMonth" => DataTypes.IntegerType
-    case "IntervalWeek" => DataTypes.IntegerType
-    case "IntervalDay" => DataTypes.IntegerType
-    case "IntervalHour" => DataTypes.IntegerType
-    case "IntervalMinute" => DataTypes.IntegerType
-    case "IntervalSecond" => DataTypes.IntegerType
-    case "UInt64" => DataTypes.LongType //DataTypes.IntegerType;
-    case "UInt32" => DataTypes.LongType
-    case "UInt16" => DataTypes.IntegerType
-    case "UInt8" => DataTypes.IntegerType
-    case "Int64" => DataTypes.LongType
-    case "Int32" => DataTypes.IntegerType
-    case "Int16" => DataTypes.IntegerType
-    case "Int8" => DataTypes.IntegerType
-    case "Date" => DataTypes.DateType
-    case "DateTime" => DataTypes.TimestampType
-    case "Enum8" => DataTypes.StringType
-    case "Enum16" => DataTypes.StringType
-    case "Float32" => DataTypes.FloatType
-    case "Float64" => DataTypes.DoubleType
-    case "Decimal32" => DataTypes.createDecimalType
-    case "Decimal64" => DataTypes.createDecimalType
-    case "Decimal128" => DataTypes.createDecimalType
-    case "Decimal" => DataTypes.createDecimalType
-    case "UUID" => DataTypes.StringType
-    case "String" => DataTypes.StringType
-    case "FixedString" => DataTypes.StringType
-    case "Nothing" => DataTypes.NullType
-    case "Nested" => DataTypes.StringType
-    case "Tuple" => DataTypes.StringType
-    case "Array" => DataTypes.StringType
-    case "AggregateFunction" => DataTypes.StringType
-    case "Unknown" => DataTypes.StringType
+  private def getSparkSqlType(clickhouseDataType: Int) = clickhouseDataType match {
+    case Types.BOOLEAN => DataTypes.BooleanType
+    case Types.TINYINT => DataTypes.ByteType
+    case Types.INTEGER => DataTypes.IntegerType
+    case Types.BIGINT => DataTypes.LongType
+    case Types.FLOAT => DataTypes.FloatType
+    case Types.DOUBLE => DataTypes.DoubleType
+    case Types.DECIMAL => DataTypes.createDecimalType
+    case Types.DATE => DataTypes.DateType
+    case Types.TIMESTAMP => DataTypes.TimestampType
+    case Types.VARCHAR => DataTypes.StringType
+    case Types.ARRAY => DataTypes.createArrayType(DataTypes.StringType)
+    case Types.STRUCT => DataTypes.createArrayType(DataTypes.StringType)
+    case Types.NULL => DataTypes.NullType
     case _ => DataTypes.NullType
   }
 
